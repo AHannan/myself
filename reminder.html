@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bite Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #start {
+            background-color: green;
+            color: white;
+        }
+        #stop {
+            background-color: red;
+            color: white;
+        }
+        #timer {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #333;
+        }
+        input {
+            font-size: 18px;
+            padding: 5px;
+            width: 80px;
+            text-align: center;
+        }
+        .hourglass {
+            width: 50px;
+            height: 100px;
+            position: relative;
+            margin: 20px auto;
+            border: 4px solid #000;
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        .sand {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background: goldenrod;
+            transition: height linear;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bite Reminder App</h1>
+    <label for="interval">Set Timer (seconds): </label>
+    <input type="number" id="interval" value="60" min="10">
+    <button id="start">Start Reminder</button>
+    <button id="stop">Stop Reminder</button>
+    <p id="timer">Next reminder in: 60s</p>
+    
+    <div class="hourglass">
+        <div class="sand" id="sand"></div>
+    </div>
+
+    <script>
+        let reminderInterval;
+        let countdown;
+        let timeLeft;
+        let audio = new Audio('https://www.myinstants.com/media/sounds/alarm.mp3');
+        
+        function sendReminder() {
+            audio.currentTime = 0;
+            audio.play().catch(error => console.log("Audio play failed: ", error));
+            setTimeout(() => audio.pause(), 3000); // Play for 3 seconds
+            timeLeft = parseInt(document.getElementById('interval').value) || 60;
+            resetHourglass();
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').innerText = `Next reminder in: ${timeLeft}s`;
+            let totalTime = parseInt(document.getElementById('interval').value) || 60;
+            document.getElementById('sand').style.height = `${(timeLeft / totalTime) * 100}%`;
+            timeLeft--;
+            if (timeLeft < 0) {
+                timeLeft = totalTime;
+            }
+        }
+
+        function resetHourglass() {
+            document.getElementById('sand').style.height = '100%';
+        }
+
+        document.getElementById('start').addEventListener('click', function() {
+            let interval = parseInt(document.getElementById('interval').value) * 1000 || 60000;
+            timeLeft = interval / 1000;
+            document.getElementById('sand').style.height = '100%';
+            if (!reminderInterval) {
+                reminderInterval = setInterval(sendReminder, interval);
+                countdown = setInterval(updateTimer, 1000);
+            }
+        });
+
+        document.getElementById('stop').addEventListener('click', function() {
+            clearInterval(reminderInterval);
+            clearInterval(countdown);
+            reminderInterval = null;
+            countdown = null;
+            document.getElementById('timer').innerText = "Reminder stopped";
+            document.getElementById('sand').style.height = '0%';
+            audio.pause();
+        });
+    </script>
+</body>
+</html>
